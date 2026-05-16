@@ -1,0 +1,33 @@
+name: Poll emails
+
+on:
+  schedule:
+    # Every hour at minute 5 (avoid the top-of-hour rush on GitHub's runners)
+    - cron: "5 * * * *"
+  workflow_dispatch: # allow manual trigger from GitHub UI
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger poll endpoint
+        env:
+          DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$DEPLOY_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "::error::Missing DEPLOY_URL or CRON_SECRET secret"
+            exit 1
+          fi
+          response=$(curl -sS -w "\n%{http_code}" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$DEPLOY_URL/api/cron/poll")
+          body=$(echo "$response" | sed '$d')
+          status=$(echo "$response" | tail -n1)
+          echo "Status: $status"
+          echo "Body: $body"
+          if [ "$status" != "200" ]; then
+            echo "::error::Poll failed with status $status"
+            exit 1
+          fi
