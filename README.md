@@ -59,15 +59,15 @@ cp .env.example .env.local
 
 Edit `.env.local`:
 
-- `MICROSOFT_CLIENT_ID` — from Azure App Registration
-- `MICROSOFT_TENANT_ID` — leave as `common` (works for both personal + work accounts)
-- `MICROSOFT_CLIENT_SECRET` — from Azure → Certificates & secrets
-- `MICROSOFT_REDIRECT_URI` — for local dev: `http://localhost:3000/api/auth/outlook/callback`. For prod, your Vercel URL.
-- `GEMINI_API_KEY` — from aistudio.google.com
-- `TELEGRAM_BOT_TOKEN` — from @BotFather
-- `TELEGRAM_CHAT_ID` — see step 5
-- `CRON_SECRET` — `openssl rand -hex 32`
-- `ENCRYPTION_KEY` — `openssl rand -hex 32` (must be exactly 64 hex chars)
+- `MICROSOFT_CLIENT_ID`: from Azure App Registration
+- `MICROSOFT_TENANT_ID`: leave as `common` (works for both personal + work accounts)
+- `MICROSOFT_CLIENT_SECRET`: from Azure → Certificates & secrets
+- `MICROSOFT_REDIRECT_URI`: for local dev: `http://localhost:3000/api/auth/outlook/callback`. For prod, your Vercel URL.
+- `GEMINI_API_KEY`: from aistudio.google.com
+- `TELEGRAM_BOT_TOKEN`: from @BotFather
+- `TELEGRAM_CHAT_ID`: see step 5
+- `CRON_SECRET`: `openssl rand -hex 32`
+- `ENCRYPTION_KEY`: `openssl rand -hex 32` (must be exactly 64 hex chars)
 
 ### 4. Add redirect URI to Azure
 
