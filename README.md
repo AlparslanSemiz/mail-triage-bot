@@ -1,8 +1,28 @@
-# Mail Triage Bot
+<h1 align="center">Mail Triage Bot</h1>
+<p align="center">Sorts your Outlook inbox with Gemini: urgent mail reaches Telegram at once, the rest arrives in a twice-daily digest.</p>
 
-AI-powered email triage for Outlook. Polls inbox hourly, classifies each new email with Gemini, sends instant Telegram alerts for urgent mail, delivers 09:00 / 18:00 (Istanbul time) digest summaries for the rest.
+<p align="center">
+<img src="https://img.shields.io/badge/Next.js-15-555?style=flat" alt="Next.js 15">
+<img src="https://img.shields.io/badge/TypeScript-555?style=flat" alt="TypeScript">
+<img src="https://img.shields.io/badge/runs%20on-free%20tiers-555?style=flat" alt="runs on free tiers">
+</p>
 
-## Stack
+<p align="center"><b><a href="#setup">Set it up</a></b> · <a href="#architecture">Architecture</a> · <a href="#cost">Cost</a></p>
+
+## Why
+
+A busy inbox hides the few mails that need an answer now. This bot checks Outlook every hour, asks Gemini to classify each new mail, and sends only the urgent ones to Telegram immediately. Everything else is queued and summarised at 09:00 and 18:00 (Istanbul time).
+
+## Features
+
+- Hourly polling of Outlook through Microsoft Graph (OAuth with a refresh token, stored encrypted).
+- Gemini classifies each mail. The default prompt is tuned for a lawyer's inbox and is easy to change.
+- Instant Telegram alerts for urgent mail; digest summaries for the rest.
+- Deduplication and a digest queue in Upstash Redis.
+- Scheduling with GitHub Actions, because Vercel Hobby cron runs only daily.
+- Designed to fit the free tiers of every service it uses (see [Cost](#cost)).
+
+## Tech
 
 - **Next.js 15** (App Router, TypeScript) on **Vercel** (Hobby plan, free)
 - **Microsoft Graph API** for Outlook (delegated permissions, OAuth + refresh token)
@@ -39,6 +59,8 @@ AI-powered email triage for Outlook. Polls inbox hourly, classifies each new ema
 ```
 
 ## Setup
+
+Requires Node 20 or later.
 
 ### 1. Clone and install
 
@@ -152,10 +174,14 @@ Free tier should cover personal use entirely:
 - **Vercel Hobby**: free, 100 GB bandwidth, 100 GB-hours function execution
 - **Upstash Redis**: free, 10K commands/day, 256 MB
 - **Gemini API**: free tier covers ~1500 requests/day
-- **GitHub Actions**: free, 2000 min/month (we use < 5)
+- **GitHub Actions**: free (public repo; a private fork would use about 800 of the 2,000 free minutes a month: 24 hourly polls + 2 digests a day, each billed at least 1 minute)
 
 If Gemini free tier runs out, switch to `gemini-2.5-flash-lite` (cheaper) in env vars.
 
 ## Adding more accounts later
 
 For Gmail support: add a parallel `/api/auth/gmail/*` flow and `lib/gmail.ts`. The classifier and Telegram code stay the same.
+
+## Status
+
+A personal tool, set up for one Outlook account. Gmail is not supported yet.
