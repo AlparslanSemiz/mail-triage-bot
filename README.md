@@ -174,7 +174,7 @@ Free tier should cover personal use entirely:
 - **Vercel Hobby**: free, 100 GB bandwidth, 100 GB-hours function execution
 - **Upstash Redis**: free, 10K commands/day, 256 MB
 - **Gemini API**: free tier covers ~1500 requests/day
-- **GitHub Actions**: free, 2000 min/month on private repos (we use ~800: 24 hourly polls + 2 digests a day is about 780 runs a month, each billed at least 1 minute)
+- **GitHub Actions**: free (public repo; a private fork would use about 800 of the 2,000 free minutes a month: 24 hourly polls + 2 digests a day, each billed at least 1 minute)
 
 If Gemini free tier runs out, switch to `gemini-2.5-flash-lite` (cheaper) in env vars.
 
