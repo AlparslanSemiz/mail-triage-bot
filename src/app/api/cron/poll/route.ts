@@ -10,6 +10,7 @@ import {
   setLastPoll,
 } from "@/lib/kv";
 import { sendInstantAlert } from "@/lib/telegram";
+import { isOwnOrDraft } from "@/lib/filter";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // seconds — Vercel Hobby allows up to 60s
@@ -37,11 +38,14 @@ export async function GET(req: NextRequest) {
     let instant = 0;
     let queued = 0;
     let skipped = 0;
-    const newlyProcessedIds: string[] = [];
 
     for (const msg of messages) {
       // Skip if already processed (defensive — filter should handle it)
       if (await isProcessed(msg.id)) continue;
+      if (isOwnOrDraft(msg, env.OWN_ADDRESSES)) {
+        await markProcessed([msg.id]);
+        continue;
+      }
 
       processed++;
       const cls = await classifyMessage(msg);
@@ -74,12 +78,10 @@ export async function GET(req: NextRequest) {
         skipped++;
       }
 
-      newlyProcessedIds.push(msg.id);
+      // Mark right away so a later failure in this poll does not resend alerts.
+      await markProcessed([msg.id]);
     }
 
-    if (newlyProcessedIds.length > 0) {
-      await markProcessed(newlyProcessedIds);
-    }
     await setLastPoll(startedAt);
 
     return NextResponse.json({

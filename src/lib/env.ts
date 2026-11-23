@@ -15,6 +15,9 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.string().url(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 
+  // Comma-separated own addresses; mails sent from these (Sent Items) are skipped.
+  OWN_ADDRESSES: z.string().default(""),
+
   CRON_SECRET: z.string().min(16),
   ENCRYPTION_KEY: z.string().length(64), // 32 bytes hex = 64 chars
 });
@@ -34,6 +37,7 @@ export const env = envSchema.parse({
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
 
+  OWN_ADDRESSES: process.env.OWN_ADDRESSES,
   CRON_SECRET: process.env.CRON_SECRET,
   ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
 });

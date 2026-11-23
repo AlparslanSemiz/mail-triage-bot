@@ -83,7 +83,8 @@ export async function isProcessed(messageId: string): Promise<boolean> {
 
 export async function markProcessed(messageIds: string[]): Promise<void> {
   if (messageIds.length === 0) return;
-  await redis.sadd(PROCESSED_KEY, ...messageIds);
+  const [first, ...rest] = messageIds;
+  await redis.sadd(PROCESSED_KEY, first, ...rest);
 }
 
 // ============================================================
