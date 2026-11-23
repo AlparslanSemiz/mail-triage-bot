@@ -1,5 +1,5 @@
 <h1 align="center">Mail Triage Bot</h1>
-<p align="center">Sorts your Outlook inbox with Gemini: urgent mail reaches Telegram at once, the rest arrives in a twice-daily digest.</p>
+<p align="center">Sorts your Outlook inbox with Gemini: urgent mail reaches Discord (or Telegram) at once, the rest arrives in a twice-daily digest.</p>
 
 <p align="center">
 <img src="https://img.shields.io/badge/Next.js-15-555?style=flat" alt="Next.js 15">
@@ -152,6 +152,10 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 curl -H "Authorization: Bearer $CRON_SECRET" \
   https://<your-app>.vercel.app/api/cron/digest
 ```
+
+## Discord instead of Telegram
+
+Create a private server, then a channel → Edit Channel → Integrations → Webhooks → New Webhook → Copy Webhook URL. Set it as `DISCORD_WEBHOOK_URL`; when it is set, Telegram is not used and its variables may be left empty. Set the channel's notifications to "All Messages" so alerts reach your phone. Mail text never pings anyone (mentions are disabled).
 
 ## Customization
 

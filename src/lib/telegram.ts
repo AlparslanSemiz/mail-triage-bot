@@ -1,6 +1,6 @@
 import { env } from "./env";
 
-const TG_API = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}`;
+
 
 type SendOptions = {
   /** When true, escapes text for MarkdownV2; default plain text */
@@ -27,7 +27,7 @@ export async function sendTelegram(
   };
   if (opts.markdown) body.parse_mode = "MarkdownV2";
 
-  const res = await fetch(`${TG_API}/sendMessage`, {
+  const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -37,45 +37,6 @@ export async function sendTelegram(
     const errText = await res.text();
     throw new Error(`Telegram send failed: ${res.status} ${errText}`);
   }
-}
-
-/**
- * Sends an instant alert for a high-urgency email.
- * Plain text (no markdown) to avoid escaping pain with arbitrary subject lines.
- */
-export async function sendInstantAlert(args: {
-  from: string;
-  subject: string;
-  summary: string;
-  suggestedAction: string;
-  webLink: string;
-}): Promise<void> {
-  const text = [
-    "🚨 ACİL MAİL",
-    "",
-    `Kimden: ${args.from}`,
-    `Konu: ${args.subject}`,
-    "",
-    `Özet: ${args.summary}`,
-    `Aksiyon: ${args.suggestedAction}`,
-    "",
-    `Açmak için: ${args.webLink}`,
-  ].join("\n");
-  await sendTelegram(text);
-}
-
-export async function sendDigest(args: {
-  title: string;
-  body: string;
-  count: number;
-}): Promise<void> {
-  const text = [
-    `📬 ${args.title}`,
-    `(${args.count} mail)`,
-    "",
-    args.body,
-  ].join("\n");
-  await sendTelegram(text);
 }
 
 export { escapeMd };

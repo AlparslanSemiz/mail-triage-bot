@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "get-chat-id": "tsx scripts/get-telegram-chat-id.ts"
+    "get-chat-id": "tsx scripts/get-telegram-chat-id.ts",
+    "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

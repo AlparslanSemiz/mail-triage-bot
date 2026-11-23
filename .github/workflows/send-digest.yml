@@ -1,11 +1,11 @@
 name: Send digest
 
-# Istanbul = UTC+3 year-round (Türkiye no longer observes DST).
-# 09:00 Istanbul = 06:00 UTC; 18:00 Istanbul = 15:00 UTC.
+# Karlsruhe (Europe/Berlin): 07:00 UTC = 08:00 in winter / 09:00 in summer;
+# 17:00 UTC = 18:00 in winter / 19:00 in summer.
 on:
   schedule:
-    - cron: "0 6 * * *" # 09:00 Istanbul
-    - cron: "0 15 * * *" # 18:00 Istanbul
+    - cron: "0 7 * * *" # morning, Karlsruhe
+    - cron: "0 17 * * *" # evening, Karlsruhe
   workflow_dispatch:
 
 jobs:

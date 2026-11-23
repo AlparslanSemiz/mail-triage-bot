@@ -11,7 +11,7 @@ export type Classification = {
   suggested_action: string;
 };
 
-const SYSTEM_PROMPT = `Sen, kullanıcının (Karlsruhe'de KIT'te Informatik öğrencisi) Outlook'una gelen mailleri triajlayan bir AI asistanısın.
+const SYSTEM_PROMPT = `Sen, Alp'in (Karlsruhe'de KIT'te Informatik öğrencisi, Werkstudent, Türk vatandaşı, oturum izniyle Almanya'da yaşıyor) Outlook'una gelen mailleri triajlayan bir AI asistanısın. Gmail hesabındaki mailler de Outlook'a yönlendirilir; onları da aynı kurallarla sınıflandır.
 
 Her e-posta için şu kategorilere ayır:
 
@@ -21,6 +21,9 @@ Her e-posta için şu kategorilere ayır:
 - Bankadan gelen DOLANDIRICILIK uyarısı veya yetkisiz işlem bildirimi (rutin "yeni giriş tespit edildi" DEĞİL)
 - Internship/job offer geldi veya interview daveti
 - Kişiden (insan) doğrudan ve aciliyet ifade eden mail (aile/arkadaş "acil ara" gibi)
+- Bir kurumun (KVV/Deutschlandticket aboneliği, Studierendenwerk/yurt, Krankenkasse, Finanzamt, Bürgeramt, Rundfunkbeitrag, işveren, banka) gerçek bir kişi tarafından yazılmış ve belge, bilgi ya da cevap istediği mail
+- "Kündigung", "Mahnung", "Frist", "letzte Erinnerung", "Sperrung", "Rückforderung" gibi bir hakkın, aboneliğin ya da hesabın sona ermesi, ceza veya ödeme talebi bildiren mail
+- Postanın teslim edilemediğini ("konnte nicht zugestellt werden", "unzustellbar", "Adresse") ya da adresin güncellenmesi gerektiğini bildiren mail
 
 "important" — Aynı gün incelenmeli ama beklemeye dayanır:
 - KIT'ten dönem içi ders/sınav bildirimleri (deadline > 48 saat)
@@ -53,7 +56,8 @@ KRİTİK kurallar:
 1. Otomatik bildirim sınıflandırırken çok dikkatli ol. "noreply", "notification", "no-reply", "donotreply" gönderici → ASLA instant. En fazla important, genelde skip veya normal.
 2. "New sign-in detected", "yeni oturum açma tespit edildi" gibi mailler **skip**'tir — kullanıcı kendisi giriş yapmıştır, rutin bildirim. Sadece "suspicious activity detected" veya "fraud alert" gibi gerçek dolandırıcılık uyarıları instant olabilir.
 3. Microsoft/Google/Apple'ın "uygulamanız bağlandı" mailleri **skip** — kullanıcı izni zaten verdi, bildirim sadece kayıt amaçlı.
-4. Şüpheli durumda bir kategori aşağı düş: instant'tan emin değilsen important; important'tan emin değilsen normal. False positive (gereksiz acil bildirim) en kötü, false negative (önemli olanı atlamak) ikinci kötü.
+4. Resmi kurum ya da sözleşme tarafı (abonelik, sigorta, oturum izni, üniversite) bir şey istiyor veya bir şeyi sonlandırıyorsa, gönderici adresi noreply olsa bile en az important; son tarih yakınsa ya da süre geçmişse instant. Bu kural 1. kuralın üstündedir.
+5. Şüpheli durumda bir kategori aşağı düş: instant'tan emin değilsen important; important'tan emin değilsen normal. False positive (gereksiz acil bildirim) en kötü, false negative (önemli olanı atlamak) ikinci kötü.
 
 summary_tr: Maksimum 2 cümle, Türkçe (mail Almanca/İngilizce olsa bile özet Türkçe).
 suggested_action: Tek satır, ne yapmalı.
@@ -73,6 +77,23 @@ const responseSchema = {
   required: ["urgency", "category", "summary_tr", "suggested_action"],
 };
 
+function isRetryable(e: unknown): boolean {
+  const m = e instanceof Error ? e.message : String(e);
+  return /\b(429|500|503)\b|RESOURCE_EXHAUSTED|UNAVAILABLE|overloaded/i.test(m);
+}
+
+/** Retries transient Gemini errors (rate limit, overload) with backoff. */
+export async function withRetry<T>(fn: () => Promise<T>, tries = 3): Promise<T> {
+  for (let i = 0; ; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (i >= tries - 1 || !isRetryable(e)) throw e;
+      await new Promise((r) => setTimeout(r, 2000 * 2 ** i));
+    }
+  }
+}
+
 export async function classifyMessage(
   msg: OutlookMessage
 ): Promise<Classification> {
@@ -81,7 +102,6 @@ export async function classifyMessage(
     systemInstruction: SYSTEM_PROMPT,
     generationConfig: {
       responseMimeType: "application/json",
-      // @ts-expect-error — schema typing in SDK
       responseSchema,
       temperature: 0.2,
     },
@@ -95,7 +115,7 @@ export async function classifyMessage(
     msg.bodyPreview?.slice(0, 1500) ?? "(boş)",
   ].join("\n");
 
-  const result = await model.generateContent(userPart);
+  const result = await withRetry(() => model.generateContent(userPart));
   const text = result.response.text();
 
   try {
@@ -139,6 +159,6 @@ export async function generateDigestSummary(
     )
     .join("\n");
 
-  const result = await model.generateContent(formatted);
+  const result = await withRetry(() => model.generateContent(formatted));
   return result.response.text();
 }

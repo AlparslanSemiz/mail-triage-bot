@@ -111,6 +111,7 @@ export type OutlookMessage = {
     emailAddress: { name: string; address: string };
   };
   isRead: boolean;
+  isDraft?: boolean;
   importance: "low" | "normal" | "high";
   webLink: string;
 };
@@ -127,7 +128,7 @@ export async function fetchNewMessages(since: Date): Promise<OutlookMessage[]> {
   url.searchParams.set("$filter", `receivedDateTime gt ${sinceIso}`);
   url.searchParams.set(
     "$select",
-    "id,subject,bodyPreview,receivedDateTime,from,isRead,importance,webLink"
+    "id,subject,bodyPreview,receivedDateTime,from,isRead,isDraft,importance,webLink"
   );
   url.searchParams.set("$orderby", "receivedDateTime asc");
   url.searchParams.set("$top", "50");
