@@ -42,3 +42,18 @@ test("masked links and formatting in mail text are neutralised", async () => {
   assert.ok(!/(^|[^\\])@/.test(out), "no unescaped @");
   assert.ok(!out.includes("https://"), "url scheme broken so it cannot autolink");
 });
+
+test("hard cut never separates a backslash from the char it escapes", async () => {
+  const { splitMessage, escapeDiscord } = await import("../src/lib/discord");
+  for (let pad = 0; pad < 4; pad++) {
+    const text = escapeDiscord("a".repeat(pad) + "[".repeat(3000));
+    const chunks = splitMessage(text);
+    for (const c of chunks) {
+      assert.ok(c.length <= 2000);
+      let run = 0;
+      while (run < c.length && c[c.length - 1 - run] === "\\") run++;
+      assert.equal(run % 2, 0, "chunk must not end with a dangling escape");
+    }
+    assert.equal(chunks.join(""), text);
+  }
+});

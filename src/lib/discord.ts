@@ -9,7 +9,14 @@ export function splitMessage(text: string, limit = DISCORD_LIMIT): string[] {
   let rest = text;
   while (rest.length > limit) {
     let cut = rest.lastIndexOf("\n", limit);
-    if (cut <= 0) cut = limit;
+    if (cut <= 0) {
+      cut = limit;
+      // Never cut between a backslash and the character it escapes: an odd run
+      // of trailing backslashes means the next char would start unescaped.
+      let run = 0;
+      while (run < cut && rest[cut - 1 - run] === "\\") run++;
+      if (run % 2 === 1) cut -= 1;
+    }
     chunks.push(rest.slice(0, cut));
     rest = rest.slice(cut).replace(/^\n/, "");
   }
