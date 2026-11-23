@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 process.env.GEMINI_API_KEY ??= "test";
+process.env.TELEGRAM_BOT_TOKEN ??= "x"; process.env.TELEGRAM_CHAT_ID ??= "1";
 for (const k of ["MICROSOFT_CLIENT_ID","MICROSOFT_CLIENT_SECRET","TELEGRAM_BOT_TOKEN","TELEGRAM_CHAT_ID","UPSTASH_REDIS_REST_TOKEN"]) process.env[k] ??= "x";
 process.env.MICROSOFT_REDIRECT_URI ??= "https://e.x/cb";
 process.env.UPSTASH_REDIS_REST_URL ??= "https://e.x";

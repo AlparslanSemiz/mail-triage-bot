@@ -9,7 +9,7 @@ import {
   getLastPoll,
   setLastPoll,
 } from "@/lib/kv";
-import { sendInstantAlert } from "@/lib/telegram";
+import { sendInstantAlert } from "@/lib/notify";
 import { isOwnOrDraft } from "@/lib/filter";
 
 export const dynamic = "force-dynamic";

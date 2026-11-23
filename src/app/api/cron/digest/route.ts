@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { flushDigest } from "@/lib/kv";
 import { generateDigestSummary } from "@/lib/gemini";
-import { sendDigest } from "@/lib/telegram";
+import { sendDigest } from "@/lib/notify";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
