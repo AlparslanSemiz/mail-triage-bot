@@ -1,8 +1,13 @@
 import { env } from "./env";
-import { sendDiscord } from "./discord";
+import { escapeDiscord, sendDiscord } from "./discord";
 import { sendTelegram } from "./telegram";
 
 /** Sends to Discord when DISCORD_WEBHOOK_URL is set, otherwise to Telegram. */
+/** Untrusted text (from mail or AI output) is escaped only for Discord; Telegram is sent as plain text. */
+function safe(s: string): string {
+  return env.DISCORD_WEBHOOK_URL ? escapeDiscord(s) : s;
+}
+
 export async function notify(text: string): Promise<void> {
   if (env.DISCORD_WEBHOOK_URL) return sendDiscord(text);
   return sendTelegram(text);
@@ -22,11 +27,11 @@ export async function sendInstantAlert(args: {
   const text = [
     "🚨 ACİL MAİL",
     "",
-    `Kimden: ${args.from}`,
-    `Konu: ${args.subject}`,
+    `Kimden: ${safe(args.from)}`,
+    `Konu: ${safe(args.subject)}`,
     "",
-    `Özet: ${args.summary}`,
-    `Aksiyon: ${args.suggestedAction}`,
+    `Özet: ${safe(args.summary)}`,
+    `Aksiyon: ${safe(args.suggestedAction)}`,
     "",
     `Açmak için: ${args.webLink}`,
   ].join("\n");
@@ -42,7 +47,7 @@ export async function sendDigest(args: {
     `📬 ${args.title}`,
     `(${args.count} mail)`,
     "",
-    args.body,
+    safe(args.body),
   ].join("\n");
   await notify(text);
 }

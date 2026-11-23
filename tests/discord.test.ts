@@ -32,3 +32,13 @@ test("Discord alone (no Telegram) is a valid config", async () => {
   const { env } = await import("../src/lib/env");
   assert.ok(env.DISCORD_WEBHOOK_URL);
 });
+
+test("masked links and formatting in mail text are neutralised", async () => {
+  const { escapeDiscord } = await import("../src/lib/discord");
+  const out = escapeDiscord("[Outlook'ta aç](https://evil.example) **acil** @everyone <@1>");
+  assert.ok(!/(^|[^\\])\[/.test(out), "no unescaped [");
+  assert.ok(!/(^|[^\\])\(/.test(out), "no unescaped (");
+  assert.ok(!/(^|[^\\])\*/.test(out), "no unescaped *");
+  assert.ok(!/(^|[^\\])@/.test(out), "no unescaped @");
+  assert.ok(!out.includes("https://"), "url scheme broken so it cannot autolink");
+});

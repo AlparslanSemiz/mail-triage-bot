@@ -17,13 +17,22 @@ export function splitMessage(text: string, limit = DISCORD_LIMIT): string[] {
   return chunks;
 }
 
+/**
+ * Escapes Discord markdown so mail content (subject, sender, AI summary) can't
+ * render as masked links, headings or formatting that imitates the real link.
+ */
+export function escapeDiscord(s: string): string {
+  return s.replace(/[\\*_~`|>\[\]()#\-:<@]/g, "\\$&");
+}
+
 export async function sendDiscord(text: string): Promise<void> {
   for (const content of splitMessage(text)) {
     const res = await fetch(env.DISCORD_WEBHOOK_URL!, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       // allowed_mentions: none, so mail content can never ping anyone.
-      body: JSON.stringify({ content, allowed_mentions: { parse: [] } }),
+      body: JSON.stringify({ content, allowed_mentions: { parse: [] }, flags: 4 }),
+      // flags 4 = SUPPRESS_EMBEDS: no preview cards for links inside mail text.
     });
     if (!res.ok) {
       const errText = await res.text();
